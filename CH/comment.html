@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ニコニコ動画風のコメント表示</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.5.1/gsap.min.js"></script>
+<script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+<style>
+  @font-face {
+    font-family: 'Koruri';
+    src: url('https://github.com/rikunn/niconicojikkyo-Viewer-for-Xit-mobile/raw/main/Font/Koruri-Semibold.ttf') format('truetype'); /* フォントファイルのパスを正しく指定 */
+    font-weight: normal;
+    font-style: normal;
+  }
+
+  body {
+    font-family: 'Koruri', sans-serif; /* 読み込んだフォントを適用 */
+  }
+</style>
+</head>
+<body>
+<script>
+let count = 0;
+var size = 40;
+var animtime = 6;
+var color = "rgb(240,240,240)";
+var Font = "MS 明記";
+
+async function createText(text) {
+  let div_text = document.createElement('div');
+div_text.id = "text" + count;
+count++;
+div_text.style.position = 'fixed';
+div_text.style.whiteSpace = 'nowrap';
+div_text.style.left = (document.documentElement.clientWidth) + 'px';
+var random = Math.round(Math.random() * document.documentElement.clientHeight);
+div_text.style.top = random + 'px';
+
+// テキストを包むspan要素を作成
+const textSpan = document.createElement('span');
+textSpan.style.textShadow = '5px 5px 5px rgba(0, 0, 0, 0.5)';
+textSpan.appendChild(document.createTextNode(text));
+
+div_text.appendChild(textSpan);
+div_text.style.fontSize = `${size}px`;
+div_text.style.color = color;
+
+document.body.appendChild(div_text);
+
+// ライブラリを用いたテキスト移動のアニメーション
+    await gsap.to("#" + div_text.id, { duration: animtime, x: -1 * (document.documentElement.clientWidth + div_text.clientWidth), ease: "none" });
+
+
+div_text.parentNode.removeChild(div_text);
+}
+
+window.chrome.webview.addEventListener('message', function (e) {
+  var jsonString = e.data;
+    var json = $.parseJSON(jsonString);
+console.log(json);
+    size = json.FontSize;
+    animtime = json.Speed;
+    color = `rgb(${json.Color})`;
+    Font = `${json.Font}`;
+
+    if(json.newCommet == true && json.isComment == true){
+      createText(json.Text);
+    }
+});
+</script>
+</body>
+</html>
